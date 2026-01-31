@@ -4,10 +4,11 @@ def main():
     base = "https://dadosabertos.ans.gov.br/FTP/PDA/demonstracoes_contabeis/"
     client = ANSClient(base)
 
-    last3 = client.get_last_quarter_zip_urls(3)
-    print("Últimos 3 arquivos ZIP disponíveis:")
-    for u in last3:
-        print(" -", u)
-        
+    files = client.download_and_extract_quarter_zips(3)
+
+    print("ZIPs baixados:")
+    for f in files:
+        print("-", f)
+
 if __name__ == "__main__":
     main()
