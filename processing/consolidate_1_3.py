@@ -3,7 +3,6 @@ from __future__ import annotations
 import os
 import re
 import csv
-import time
 import zipfile
 import logging
 from typing import Dict, Iterable, List, Optional, Tuple
@@ -22,7 +21,7 @@ CADOP_URL = "https://dadosabertos.ans.gov.br/FTP/PDA/operadoras_de_plano_de_saud
 OUT_COLS = ["CNPJ", "RazaoSocial", "Trimestre", "Ano", "ValorDespesas"]
 
 ACCOUNT_PREFIXES = ("411",)  # heurística por conta
-DESC_KEYWORDS_RE = re.compile(r"(event|sinistr)", re.IGNORECASE)
+DESC_KEYWORDS_RE = re.compile(r"(?:event|sinistr)", re.IGNORECASE)
 
 CHUNKSIZE = 250_000
 FINAL_ZIP_NAME = "consolidado_despesas.zip"
@@ -83,10 +82,10 @@ def parse_money_br(series: pd.Series) -> pd.Series:
     return pd.to_numeric(s, errors="coerce")
 
 def derive_year_quarter_from_date_col(df: pd.DataFrame) -> Tuple[pd.Series, pd.Series, pd.Series]:
-    dt = pd.to_datetime(df["DATA"], errors="coerce", infer_datetime_format=True)
+    dt = pd.to_datetime(df["DATA"], errors="coerce")
     bad = dt.isna()
     if bad.any():
-        dt2 = pd.to_datetime(df.loc[bad, "DATA"], errors="coerce", dayfirst=True, infer_datetime_format=True)
+        dt2 = pd.to_datetime(df.loc[bad, "DATA"], errors="coerce", dayfirst=True)
         dt.loc[bad] = dt2
     ano = dt.dt.year
     trimestre = ((dt.dt.month - 1) // 3 + 1).astype("Int64")
