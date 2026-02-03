@@ -1,0 +1,22 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.venv/
+venv/
+
+# Dados e saídas geradas
+data/
+output/
+
+# Logs
+*.log
+
+# Cache
+.cache/
+.cache_ans/
+
+# Sistema operacional
+.DS_Store
+Thumbs.db
