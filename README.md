@@ -61,3 +61,16 @@ output/teste_1/consolidado_despesas.zip
 ### Observação sobre arquivos gerados
 
 As pastas data/ e output/ são criadas automaticamente durante a execução do projeto e não são versionadas no GitHub (ver .gitignore).
+---
+
+## Execução — Teste 2 (Validação, Enriquecimento e Agregação de Dados)
+
+O Teste 2 utiliza como entrada o CSV consolidado gerado no Teste 1.3 e executa três etapas sequenciais:
+- Validação dos dados
+- Enriquecimento com dados cadastrais
+- Agregação e análise estatística
+
+A execução completa do Teste 2 é feita automaticamente pelo `main.py`, após o término do Teste 1.
+
+```bash
+python main.py

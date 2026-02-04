@@ -1,7 +1,15 @@
+"""
+Cliente para acesso aos dados abertos da ANS.
+
+Responsável por:
+- Navegar no diretório público (Index of)
+- Identificar últimos trimestres disponíveis
+- Baixar e extrair arquivos ZIP de demonstrações contábeis
+"""
+
 import os
 # Manipulação de arquivos e diretórios no sistema operacional
 import re
-from urllib import response
 # Expressões regulares para identificar padrões como anos (YYYY/) e trimestres (1T2025)
 import requests
 # Realiza requisições HTTP para acessar a API pública da ANS
@@ -57,7 +65,7 @@ class ANSClient:
         return clean
 
     def list_year_urls(self) -> list[str]:
-        #Retorna URLs dos anos (2007/, 2008/, ...) disponíveis na raiz.
+        # Retorna URLs dos anos (2007/, 2008/, ...) disponíveis na raiz.
         hrefs = self.fetch_index_links(self.base_url)
 
         year_urls = []
@@ -68,7 +76,7 @@ class ANSClient:
         return sorted(year_urls)
     
     def list_zip_files(self, year_url: str) -> list[str]:
-        #Lista URLs de arquivos .zip dentro de um ano.
+        # Lista URLs de arquivos .zip dentro de um ano.
 
         hrefs = self.fetch_index_links(year_url)
         zips = [urljoin(year_url, h) for h in hrefs if h.lower().endswith(".zip")]
@@ -113,7 +121,11 @@ class ANSClient:
 
         filename = url.split("/")[-1]
         out_path = os.path.join(out_dir, filename)
-
+        
+        # Evita baixar novamente se o arquivo já existir (cache simples)
+        if os.path.exists(out_path) and os.path.getsize(out_path) > 0:
+            return out_path
+    
         response = requests.get(url, stream=True, timeout=60)
         response.raise_for_status()
 
@@ -133,17 +145,19 @@ class ANSClient:
         with zipfile.ZipFile(zip_path, "r") as zip_ref:
             zip_ref.extractall(extract_dir)
 
-    def download_and_extract_quarter_zips(self, n: int = 3):
-        """
-        Baixa os ZIPs dos últimos n trimestres e extrai os arquivos CSV.
+    def download_and_extract_quarter_zips(self, n: int = 3) -> list[str]:
+        """ 
+        Baixa os ZIPs dos últimos n trimestres e extrai os arquivos CSV. 
         """
         zip_urls = self.get_last_quarter_zip_urls(n)
-
         downloaded_files = []
 
         for url in zip_urls:
             zip_path = self.download_file(url, out_dir="data/raw")
             downloaded_files.append(zip_path)
 
-            self.extract_zip(zip_path, extract_dir="data/extracted")
+            zip_name = os.path.splitext(os.path.basename(zip_path))[0]
+            extract_dir = os.path.join("data/extracted", zip_name)
+            self.extract_zip(zip_path, extract_dir=extract_dir)
+
         return downloaded_files

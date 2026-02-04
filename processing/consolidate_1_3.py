@@ -1,3 +1,54 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
+"""
+1.3 – Consolidação e Análise de Inconsistências (ANS) – v2
+=========================================================
+
+Correções nesta v2:
+-------------------
+- CADOP: suporta coluna de registro como REGISTRO_OPERADORA/Registro_ANS (normalizada internamente para REG_ANS).
+- Logs mostram quais colunas foram escolhidas.
+
+Entrada:
+--------
+CSVs trimestrais (ex.: 1T2025.csv, 2T2025.csv, 3T2025.csv)
+com colunas (conforme seu inventário/auditoria):
+  DATA; REG_ANS; CD_CONTA_CONTABIL; DESCRICAO; VL_SALDO_INICIAL; VL_SALDO_FINAL
+
+Saída exigida:
+--------------
+CSV consolidado com:
+  CNPJ, RazaoSocial, Trimestre, Ano, ValorDespesas
+E ZIP: consolidado_despesas.zip (contendo o CSV final)
+
+Inconsistências tratadas:
+-------------------------
+1) CNPJ duplicado com razões diferentes:
+   - Consolida por CNPJ+Ano+Trimestre (com RazaoSocial canônica escolhida por CNPJ pela MAIS FREQUENTE).
+   - Registra em issues/issues_cnpj_razao.csv
+
+2) Valores zerados ou negativos:
+   - Zero: mantém.
+   - Negativos:
+       --negatives zero  -> corrige negativos para 0 na soma (default)
+       --negatives keep  -> mantém negativos na soma
+   - Registra amostras em issues/issues_valores.csv
+
+3) Datas/trimestres inconsistentes:
+   - Parse robusto de DATA (tentativa padrão + fallback dayfirst).
+   - Se falhar, tenta derivar do nome do arquivo (1T2025 etc.)
+   - Registra em issues/issues_datas.csv
+
+Trade-off memória vs incremental:
+---------------------------------
+Processamento incremental (chunks) para evitar estourar RAM.
+
+Dependências:
+-------------
+Ver requirements.txt
+"""
+
 from __future__ import annotations
 
 import os
